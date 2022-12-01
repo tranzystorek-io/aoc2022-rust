@@ -11,5 +11,6 @@ name = "d01p1"
 path = "src/days/d01p1.rs"
 
 [dependencies]
+anyhoo = { git = "https://github.com/tranzystorek-io/anyhoo", features = ["reexport"] }
 aoc-utils = "0.4"
 itertools = "0.10"
