@@ -47,9 +47,9 @@ enum Entry {
 
 fn realpath(chunks: &[&str]) -> String {
     match chunks {
-        [] => unreachable!(),
-        [single] => single.to_string(),
-        many => itertools::chain!(&[""], &many[1..]).join("/"),
+        ["/"] => "/".to_string(),
+        ["/", rest @ ..] => itertools::chain!(&[""], rest).join("/"),
+        _ => unreachable!(),
     }
 }
 
