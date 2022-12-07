@@ -55,7 +55,7 @@ fn realpath(chunks: &[&str]) -> String {
 
 fn traverse(terminal: Vec<ShellLine>) -> Filesystem {
     let mut cwd = vec![];
-    let mut result = HashMap::new();
+    let mut result = Filesystem::new();
 
     for line in &terminal {
         match line {
@@ -66,13 +66,13 @@ fn traverse(terminal: Vec<ShellLine>) -> Filesystem {
             ShellLine::Cd(name) => cwd.push(name),
             ShellLine::Dir(name) => {
                 let current_dir = realpath(&cwd);
-                let d: &mut Vec<_> = result.entry(current_dir).or_default();
+                let d = result.entry(current_dir).or_default();
 
                 d.push(Entry::Dir(name.clone()));
             }
             ShellLine::File(name, size) => {
                 let current_dir = realpath(&cwd);
-                let d = result.entry(current_dir.clone()).or_default();
+                let d = result.entry(current_dir).or_default();
 
                 d.push(Entry::File(name.clone(), *size))
             }
