@@ -44,7 +44,7 @@ struct Cpu {
 }
 
 struct Crt {
-    pixels: Vec<bool>,
+    pixels: [bool; COLS * ROWS],
 }
 
 impl Fetcher {
@@ -112,7 +112,7 @@ impl Cpu {
 impl Crt {
     fn new() -> Self {
         Self {
-            pixels: vec![false; COLS * ROWS],
+            pixels: [false; COLS * ROWS],
         }
     }
 
