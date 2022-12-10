@@ -146,6 +146,7 @@ fn main() {
     aoc_utils::measure_and_print(|| {
         let mut cpu = Cpu::new(program);
         let mut crt = Crt::new();
+        let n_cycles = COLS * ROWS;
 
         loop {
             let x = cpu.x();
@@ -153,7 +154,7 @@ fn main() {
 
             crt.draw(cycle, x);
 
-            if cycle == 240 {
+            if cycle == n_cycles as i64 {
                 break;
             }
 
