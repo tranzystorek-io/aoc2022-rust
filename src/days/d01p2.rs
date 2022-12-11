@@ -33,9 +33,10 @@ fn main() {
 
         sums.sort_unstable();
 
-        let index = sums.len() - 3;
-        let result: usize = sums[index..].iter().sum();
+        let [.., a, b, c] = sums[..] else {
+            panic!();
+        };
 
-        result
+        a + b + c
     });
 }
