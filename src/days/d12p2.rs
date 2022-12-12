@@ -5,7 +5,7 @@ use itertools::Itertools;
 
 #[anyhoo::anyhoo]
 fn parse_input() -> Grid<u8> {
-    let input = BufferedInput::parse_args("Day 12: Hill Climbing Algorithm - Part 1")?;
+    let input = BufferedInput::parse_args("Day 12: Hill Climbing Algorithm - Part 2")?;
     let mut width = 0;
     let mut width_found = false;
 
@@ -20,7 +20,8 @@ fn parse_input() -> Grid<u8> {
         .flat_map(|line| {
             line.bytes()
                 .map(|b| match b {
-                    marker @ (START_MARKER | END_MARKER) => marker,
+                    END_MARKER => END_MARKER,
+                    START_MARKER => 0,
                     v @ b'a'..=b'z' => v - b'a',
                     _ => unreachable!(),
                 })
@@ -87,31 +88,17 @@ impl<T> Grid<T> {
     }
 }
 
-fn find_start_end(grid: &mut Grid<u8>) -> (Position, Position) {
+fn find_end(grid: &mut Grid<u8>) -> Position {
     let width = grid.width();
     let height = grid.height();
-
-    let mut maybe_start = None;
-    let mut maybe_end = None;
 
     for y in 0..height {
         for x in 0..width {
             let v = grid.at_mut(x, y);
 
-            match *v {
-                START_MARKER => {
-                    maybe_start = Some((x, y));
-                    *v = 0;
-                }
-                END_MARKER => {
-                    maybe_end = Some((x, y));
-                    *v = b'z' - b'a';
-                }
-                _ => (),
-            }
-
-            if let (Some(start), Some(end)) = (maybe_start, maybe_end) {
-                return (start, end);
+            if *v == END_MARKER {
+                *v = b'z' - b'a';
+                return (x, y);
             }
         }
     }
@@ -119,8 +106,8 @@ fn find_start_end(grid: &mut Grid<u8>) -> (Position, Position) {
     panic!();
 }
 
-fn traverse(grid: &Grid<u8>, start: Position, end: Position) -> Option<usize> {
-    let mut searchspace: VecDeque<_> = [(start, 0)].into();
+fn traverse_from_end(grid: &Grid<u8>, end: Position) -> Option<usize> {
+    let mut searchspace: VecDeque<_> = [(end, 0)].into();
     let mut visited = HashSet::new();
 
     while let Some(((current_x, current_y), len)) = searchspace.pop_front() {
@@ -137,11 +124,11 @@ fn traverse(grid: &Grid<u8>, start: Position, end: Position) -> Option<usize> {
 
             let &next_elev = grid.at(next_x, next_y);
 
-            if next_elev > current_elev + 1 {
+            if next_elev < current_elev - 1 {
                 continue;
             }
 
-            if (next_x, next_y) == end {
+            if next_elev == 0 {
                 return Some(len + 1);
             }
 
@@ -157,8 +144,8 @@ fn main() {
     let mut grid = parse_input()?;
 
     aoc_utils::measure_and_print(|| {
-        let (start, end) = find_start_end(&mut grid);
+        let end = find_end(&mut grid);
 
-        traverse(&grid, start, end).unwrap()
+        traverse_from_end(&grid, end).unwrap()
     });
 }
