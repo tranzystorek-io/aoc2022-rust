@@ -1,7 +1,8 @@
 use std::cmp::Ordering;
-use std::io::Read;
+use std::io::BufRead;
 
 use aoc_utils::BufferedInput;
+use itertools::Itertools;
 
 fn parse_packet(line: &str) -> Entry {
     let mut stack: Vec<Vec<Entry>> = vec![];
@@ -62,20 +63,14 @@ fn parse_packet(line: &str) -> Entry {
 }
 
 #[anyhoo::anyhoo]
-fn parse_input() -> Vec<(Entry, Entry)> {
-    let mut input = BufferedInput::parse_args("Day 13: Distress Signal - Part 1")?;
+fn parse_input() -> Vec<Entry> {
+    let input = BufferedInput::parse_args("Day 13: Distress Signal - Part 2")?;
 
-    let mut s = String::new();
-    input.read_to_string(&mut s)?;
-
-    let split = s.split("\n\n");
-    split
-        .map(|pair| {
-            let (a, b) = pair.split_once('\n').unwrap();
-
-            (parse_packet(a.trim()), parse_packet(b.trim()))
-        })
-        .collect()
+    input
+        .lines()
+        .filter_ok(|line| !line.is_empty())
+        .map_ok(|line| parse_packet(line.trim()))
+        .try_collect()?
 }
 
 #[derive(Clone, Debug)]
@@ -112,15 +107,25 @@ fn compare(left: &Entry, right: &Entry) -> Ordering {
     }
 }
 
+fn divider(value: u16) -> Entry {
+    Entry::List(vec![Entry::List(vec![Entry::Int(value)])])
+}
+
 #[anyhoo::anyhoo]
 fn main() {
-    let pairs = parse_input()?;
+    let packets = parse_input()?;
 
     aoc_utils::measure_and_print(|| {
-        pairs
-            .into_iter()
-            .enumerate()
-            .filter_map(|(i, (l, r))| compare(&l, &r).is_le().then_some(i + 1))
-            .sum::<usize>()
+        let divider_a = divider(2);
+        let divider_b = divider(6);
+
+        itertools::chain!(
+            packets.into_iter().map(|packet| (false, packet)),
+            [(true, divider_a), (true, divider_b)]
+        )
+        .sorted_by(|(_, a), (_, b)| compare(a, b))
+        .enumerate()
+        .filter_map(|(i, (is_divider, _))| is_divider.then_some(i + 1))
+        .product::<usize>()
     });
 }
